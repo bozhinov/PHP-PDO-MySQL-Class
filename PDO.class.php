@@ -113,14 +113,10 @@ class DB
 
 		}
 		catch (PDOException $e) {
+			$this->connectionStatus = false;
+			$this->pdo = null;
 			die("Problem connecting to the Db");
 		}
-	}
-
-	private function SetFailureFlag()
-	{
-		$this->pdo = null;
-		$this->connectionStatus = false;
 	}
 
 	/**
@@ -288,8 +284,20 @@ class DB
 		return $this->lastInsertId();
 	}
 
+	/**
+	 * @param $tableName
+	 * @param $params
+	 * @return bool|string
+	 */
 	public function delete($tableName, $params){
-		# TODO
+		$rowCount = $this->query(
+			'DELETE FROM `' . $tableName . 
+			' WHERE (:' . implode(',:', array_keys($params)) . ')',
+			$params
+		);
+		if ($rowCount === 0) {
+			return false;
+		}
 	}
 
 	/**
