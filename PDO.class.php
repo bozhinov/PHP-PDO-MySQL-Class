@@ -53,7 +53,6 @@ class PDOIterator implements Iterator {
 /** Class DB
  * @property PDO pdo PDO object
  * @property PDOStatement sQuery PDOStatement
- * @property PDOLog PDOLog logObject
  */
 class DB
 {
@@ -64,16 +63,11 @@ class DB
 	private $DBPassword;
 	private $pdo;
 	private $sQuery;
-	private $connectionStatus = false;
-	private $logObject;
-	private $parameters;
-	public $rowCount   = 0;
-	public $columnCount   = 0;
+	private $parameters = [];
+	public $connectionStatus = false;
+	public $rowCount = 0;
+	public $columnCount = 0;
 	public $querycount = 0;
-
-	private $retryAttempt = 0; // 失败重试次数
-	const AUTO_RECONNECT = true;
-	const RETRY_ATTEMPTS = 3; // 最大失败重试次数
 
 	/**
 	 * DB constructor.
@@ -84,13 +78,6 @@ class DB
 	 * @param $DBPassword
 	 */
 	public function __construct($this->DBName, $this->DBUser, $this->DBPassword, $this->Host = '127.0.0.1', $this->DBPort = 3306)
-	{
-		$this->parameters = [];
-		$this->Connect();
-	}
-
-
-	private function Connect()
 	{
 		try {
 			$dsn = 'mysql:';
@@ -129,9 +116,6 @@ class DB
 
 	private function Init($query, $parameters = null, $driverOptions = [])
 	{
-		if (!$this->connectionStatus) {
-			$this->Connect();
-		}
 		try {
 			$this->parameters = $parameters;
 			$this->sQuery     = $this->pdo->prepare($this->BuildParams($query, $this->parameters), $driverOptions);
