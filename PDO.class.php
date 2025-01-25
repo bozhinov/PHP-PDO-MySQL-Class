@@ -10,6 +10,8 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * A PHP MySQL PDO class similar to the Python MySQLdb.
+ *
+ * Heavily modified to fit my needs (momchil@bozhinov.eu)
  */
 
 class PDOIterator implements Iterator {
@@ -56,11 +58,6 @@ class PDOIterator implements Iterator {
  */
 class DB
 {
-	private $Host;
-	private $DBPort;
-	private $DBName;
-	private $DBUser;
-	private $DBPassword;
 	private $pdo;
 	private $sQuery;
 	private $parameters = [];
@@ -77,19 +74,19 @@ class DB
 	 * @param $DBUser
 	 * @param $DBPassword
 	 */
-	public function __construct($this->DBName, $this->DBUser, $this->DBPassword, $this->Host = '127.0.0.1', $this->DBPort = 3306)
+	public function __construct($DBName, $DBUser, $DBPassword, $DBHost = '127.0.0.1', $DBPort = 3306)
 	{
 		try {
 			$dsn = 'mysql:';
-			$dsn .= 'host=' . $this->Host . ';';
-			$dsn .= 'port=' . $this->DBPort . ';';
-			if (!empty($this->DBName)) {
-				$dsn .= 'dbname=' . $this->DBName . ';';
+			$dsn .= 'host=' . $DBHost . ';';
+			$dsn .= 'port=' . $DBPort . ';';
+			if (!empty($DBName)) {
+				$dsn .= 'dbname=' . $DBName . ';';
 			}
 			$dsn .= 'charset=utf8;';
 			$this->pdo = new PDO($dsn,
-				$this->DBUser,
-				$this->DBPassword,
+				$DBUser,
+				$DBPassword,
 				[
 					PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 					PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
@@ -114,7 +111,7 @@ class DB
 		$this->pdo = null;
 	}
 
-	private function Init($query, $parameters = null, $driverOptions = [])
+	private function Init($query, $parameters = [], $driverOptions = [])
 	{
 		try {
 			$this->parameters = $parameters;
@@ -145,7 +142,7 @@ class DB
 		$this->parameters = [];
 	}
 
-	private function BuildParams($query, $params = null)
+	private function BuildParams($query, $params = [])
 	{
 		if (!empty($params)) {
 			$array_parameter_found = false;
@@ -212,15 +209,15 @@ class DB
 	 * @param int $fetchMode
 	 * @return array|int|null
 	 */
-	public function query($query, $params = null, $fetchMode = PDO::FETCH_ASSOC)
+	public function query($query, $params = [], $fetchMode = PDO::FETCH_ASSOC)
 	{
 		$query = trim($query);
 		$rawStatement = preg_split("/( |\r|\n)/", $query);
 		$this->Init($query, $params);
 		$statement = strtolower($rawStatement[0]);
-		if ($statement === 'select' || $statement === 'show' || $statement === 'call' || $statement === 'describe') {
+		if (in_array($statement, ['select','show','call','describe']) {
 			return $this->sQuery->fetchAll($fetchMode);
-		} elseif ($statement === 'insert' || $statement === 'update' || $statement === 'delete') {
+		} elseif (in_array($statement,['insert' ,'update','delete']) {
 			return $this->sQuery->rowCount();
 		} else {
 			return NULL;
@@ -234,7 +231,7 @@ class DB
 	 * @param int $fetchMode
 	 * @return int|null|PDOIterator
 	 */
-	public function iterator($query, $params = null, $fetchMode = PDO::FETCH_ASSOC)
+	public function iterator($query, $params = [], $fetchMode = PDO::FETCH_ASSOC)
 	{
 		$query = trim($query);
 		$rawStatement = preg_split("/( |\r|\n)/", $query);
@@ -361,10 +358,10 @@ class DB
 
 	/**
 	 * @param $query
-	 * @param null $params
+	 * @param [] $params
 	 * @return array
 	 */
-	public function column($query, $params = null)
+	public function column($query, $params = [])
 	{
 		$this->Init($query, $params);
 		$resultColumn = $this->sQuery->fetchAll(PDO::FETCH_COLUMN);
@@ -376,11 +373,11 @@ class DB
 
 	/**
 	 * @param $query
-	 * @param null $params
+	 * @param [] $params
 	 * @param int $fetchmode
 	 * @return mixed
 	 */
-	public function row($query, $params = null, $fetchmode = PDO::FETCH_ASSOC)
+	public function row($query, $params = [], $fetchmode = PDO::FETCH_ASSOC)
 	{
 		$this->Init($query, $params);
 		$resultRow = $this->sQuery->fetch($fetchmode);
@@ -392,10 +389,10 @@ class DB
 
 	/**
 	 * @param $query
-	 * @param null $params
+	 * @param [] $params
 	 * @return mixed
 	 */
-	public function single($query, $params = null)
+	public function single($query, $params = [])
 	{
 		$this->Init($query, $params);
 		return $this->sQuery->fetchColumn();
