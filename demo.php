@@ -39,7 +39,7 @@
 	define('DBUser', 'root'); 
 	define('DBPassword', ''); 
 	require(dirname(__FILE__)."/src/PDO.class.php");
-	$DB = new Db(DBHost, DBName, DBUser, DBPassword); 
+	$DB = new Db(DBName, DBUser, DBPassword, DBHost); 
 ?&gt;
 			</code>
 		</pre>
@@ -57,7 +57,7 @@ define('DBName', 'test');
 define('DBUser', 'root');
 define('DBPassword', '');
 require(dirname(__FILE__)."/src/PDO.class.php");
-$DB = new Db(DBHost, DBPort, DBName, DBUser, DBPassword);
+$DB = new Db(DBName, DBUser, DBPassword, DBHost, DBPort);
 ?>
 		<h2>
 			Preventing SQL Injection Attacks
